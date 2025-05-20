@@ -16,7 +16,9 @@ const generateToken = async (user) => {
 
   const expiresAt = new Date();
 
-  expiresAt.setDate(expiresAt.getDate() + 7);
+  // expiresAt.setMinutes(expiresAt.getMinutes() + 2);
+  // expiresAt.setDate(expiresAt.getDate() + 1);
+  expiresAt.setHours(expiresAt.getHours() + 3); // this is for three hour
 
   await RefreshToken.create({
     token: refreshToken,
@@ -27,4 +29,4 @@ const generateToken = async (user) => {
   return { accessToken, refreshToken };
 };
 
-module.exports = generateToken
+module.exports = generateToken;

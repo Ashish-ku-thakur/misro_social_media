@@ -47,7 +47,7 @@ app.use((req, res, next) => {
 //ip baased rate limiting for sensitive endpoints
 const sensitiveEndpointsLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 50,
+  limit: 50,
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
