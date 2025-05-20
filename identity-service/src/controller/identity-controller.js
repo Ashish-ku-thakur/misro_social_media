@@ -1,3 +1,4 @@
+const RefreshToken = require("../model/refresh-token.model");
 const User = require("../model/user.model");
 const generateToken = require("../utils/generateToken");
 const logger = require("../utils/logger");
@@ -70,9 +71,9 @@ const loggiUser = async (req, res) => {
 
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-  // const customName = req.headers.name
-  // console.log("req.headers->", req.headers);
-  
+    // const customName = req.headers.name
+    // console.log("req.headers->", req.headers);
+
     if (!user) {
       logger.error(`Error on Login api User not Found`);
       return res
@@ -110,7 +111,60 @@ const loggiUser = async (req, res) => {
 };
 
 // refresh token
+const refreshTokenUser = async (req, res) => {
+  logger.info(`Refresh Api hit...`);
 
+  try {
+    const { refreshTokenGetByBody } = req.body;
+
+    if (!refreshTokenGetByBody) {
+      logger.warn(`Error in Refresh api refreshToken is missing`);
+
+      return res.status(400).json({
+        message: "Refresh token not found",
+        success: false,
+      });
+    }
+
+    const storedToken = await RefreshToken.findOne({
+      token: refreshTokenGetByBody,
+    }).populate({ path: "user" });
+
+    if (!storedToken || storedToken.expiresAt < new Date()) {
+      logger.warn(`Error in Refresh api storedToken is not matched`);
+
+      return res.status(400).json({
+        message: "Refresh token not matched",
+        success: false,
+      });
+    }
+
+    // console.log(storedToken);
+
+    // generate new token
+    const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+      await generateToken(storedToken.user);
+
+    // delete the old refresh token
+    storedToken.expiresAt = 0;
+    await storedToken.save();
+
+    return res.status(200).json({
+      message: "RefershToken Generated Successfully",
+      success: true,
+      user: storedToken.user,
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    });
+  } catch (error) {
+    logger.warn(`Refresh Api Error:${error}`);
+
+    res.status(500).json({
+      message: "Internal server error",
+      success: false,
+    });
+  }
+};
 // logout
 
-module.exports = { registerUser, loggiUser };
+module.exports = { registerUser, loggiUser, refreshTokenUser };
