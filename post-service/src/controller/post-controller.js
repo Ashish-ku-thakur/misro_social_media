@@ -2,6 +2,21 @@ const Post = require("../model/post.model");
 const logger = require("../utils/logger");
 const { validateCreatePost } = require("../utils/validatePost");
 
+async function invalidatePostCache(req) {
+  try {
+    const keys = await req.redisClient.keys("posts:*");
+    if (keys.length > 0) {
+      await req.redisClient.del(...keys); // spread keys
+      console.log("Cache invalidated for keys:", keys);
+    } else {
+      console.log("No cache keys matched for invalidation.");
+    }
+  } catch (error) {
+    console.error("Error invalidating cache:", error.message);
+  }
+}
+
+
 //create post
 const createPost = async (req, res) => {
   logger.info(`Create Api endpoint hit...`);
@@ -21,6 +36,9 @@ const createPost = async (req, res) => {
       content,
       mediaIds: mediaIds || [],
     });
+    
+    //afyer the create we have delete the cached
+    await invalidatePostCache(req, newlyCreatedPost._id.toString());
 
     logger.info(`Post Create successfully`, newlyCreatedPost);
 
@@ -47,7 +65,7 @@ const getAllPosts = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const startIndex = (page - 1) * limit;
 
-    const casheKey = `post:${page}:${limit}`;
+    const casheKey = `posts:${page}:${limit}`;
     const cashedPosts = await req.redisClient.get(casheKey);
 
     if (cashedPosts) {
@@ -70,8 +88,7 @@ const getAllPosts = async (req, res) => {
     };
 
     // save your post to cached
-   await req.redisClient.setex(casheKey, 3600, JSON.stringify(result));
-
+    await req.redisClient.setex(casheKey, 3600, JSON.stringify(result));
 
     return res.status(200).json({
       message: "get all posts without cashed",
@@ -79,15 +96,9 @@ const getAllPosts = async (req, res) => {
       posts: result,
     });
   } catch (error) {
-    console.log(
-      `Error occured while hiting the getAllPosts api`,
-      error
-    );
+    console.log(`Error occured while hiting the getAllPosts api`, error);
 
-    logger.error(
-      `Error occured while hiting the getAllPosts api`,
-      error
-    );
+    logger.error(`Error occured while hiting the getAllPosts api`, error);
 
     return res
       .status(500)
@@ -96,6 +107,7 @@ const getAllPosts = async (req, res) => {
 };
 
 // get one post by id
+
 
 // update the post by id
 
