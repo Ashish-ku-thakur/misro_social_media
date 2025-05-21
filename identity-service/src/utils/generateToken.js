@@ -20,6 +20,11 @@ const generateToken = async (user) => {
   // expiresAt.setDate(expiresAt.getDate() + 1);
   expiresAt.setHours(expiresAt.getHours() + 3); // this is for three hour
 
+  // delete old token
+  const oldToken = await RefreshToken.findOneAndDelete({ user: user._id });
+
+  // try to delete assesstoken also
+
   await RefreshToken.create({
     token: refreshToken,
     user: user._id,

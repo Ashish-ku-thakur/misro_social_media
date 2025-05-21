@@ -56,7 +56,7 @@ const registerUser = async (req, res) => {
   }
 };
 
-// user login
+// user login // ek logic aur add kerna hai ager koi old accesstoken hai tho delete ker dena
 const loggiUser = async (req, res) => {
   logger.info(`LogginUser endpoint hit...`);
   try {
@@ -101,7 +101,7 @@ const loggiUser = async (req, res) => {
       refreshToken,
     });
   } catch (error) {
-    logger.error("LogginUser error occured", error);
+    logger.error("LogginUser error occured", error.message);
 
     res.status(500).json({
       message: "Internal server error",
