@@ -165,6 +165,44 @@ const refreshTokenUser = async (req, res) => {
     });
   }
 };
+
 // logout
 
-module.exports = { registerUser, loggiUser, refreshTokenUser };
+const logoutUser = async (req, res) => {
+  logger.info("LogoutUser endpoint hit...");
+
+  try {
+    const { refreshTokenGetByBody } = req.body;
+
+    if (!refreshTokenGetByBody) {
+      logger.warn(
+        `Error occured in logoutUser refreshtokenGetByBody not found`
+      );
+      return res.status(400).json({
+        message: "refreshtokenGetByBody not found",
+        success: false,
+      });
+    }
+
+    const getTheToken = await RefreshToken.findOne({
+      token: refreshTokenGetByBody,
+    });
+
+    getTheToken.expiresAt = 0;
+    await getTheToken.save();
+    logger.info("RefreshToken delete for logout");
+
+    return res.status(200).json({
+      message: "User loggout successfully",
+      success: true,
+    });
+  } catch (error) {
+    logger.warn("Error occured in LogoutUser endpoint"), error;
+    return res.status(500).json({
+      message: "Internal Server Error",
+      success: false,
+    });
+  }
+};
+
+module.exports = { registerUser, loggiUser, refreshTokenUser, logoutUser };
