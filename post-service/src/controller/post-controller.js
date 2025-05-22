@@ -16,7 +16,6 @@ async function invalidatePostCache(req) {
   }
 }
 
-
 //create post
 const createPost = async (req, res) => {
   logger.info(`Create Api endpoint hit...`);
@@ -36,7 +35,7 @@ const createPost = async (req, res) => {
       content,
       mediaIds: mediaIds || [],
     });
-    
+
     //afyer the create we have delete the cached
     await invalidatePostCache(req, newlyCreatedPost._id.toString());
 
@@ -107,10 +106,54 @@ const getAllPosts = async (req, res) => {
 };
 
 // get one post by id
+const getPost = async (req, res) => {
+  logger.info("GetPost Api hit...");
 
+  try {
+    const { postId } = req.params;
 
-// update the post by id
+    if (!postId) {
+      logger.warn("Post Id Not Found In GetPost Api");
+      return res.status(400).json({
+        message: "Post Id Not Found",
+        success: false,
+      });
+    }
+
+    const cacheKey = `post:${postId}`;
+    const cachedPost = await req.redisClient.get(cacheKey);
+    if (cachedPost) {
+      return res.status(200).json(JSON.parse(cachedPost));
+    }
+
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      logger.warn("Post Not Found In GetPost Api");
+      return res.status(400).json({
+        message: "Post Not Found",
+        success: false,
+      });
+    }
+
+    await req.redisClient.setex(cacheKey, 3600, JSON.stringify(post));
+
+    return res.status(200).json({
+      message: "Post Found",
+      success: true,
+      post,
+    });
+  } catch (error) {
+    logger.error("Error occured while GetPost Apui Hiting...", error);
+
+    return res.status(500).json({
+      message: "Internal Server Error",
+      success: false,
+    });
+  }
+};
+
 
 // delete the post
 
-module.exports = { createPost, getAllPosts };
+module.exports = { createPost, getAllPosts, getPost };
