@@ -6,9 +6,11 @@ const mediaRouter = require("./router/media.route");
 const logger = require("./utils/logger");
 const { rateLimit } = require("express-rate-limit");
 const { RedisStore } = require("rate-limit-redis");
-const {RateLimiterRedis} = require("rate-limiter-flexible")
+const { RateLimiterRedis } = require("rate-limiter-flexible");
 const Redis = require("ioredis");
 const dbConnect = require("./utils/db");
+const { connectToRabbitMQ, consumeEvent } = require("./utils/rabbitmq");
+const { handlePostDeleted } = require("./eventHandler/media-event-handler");
 
 const PORT = process.env.PORT || 3003;
 const app = express();
@@ -69,8 +71,11 @@ dbConnect()
   .then(() => {
     logger.info("dbconnected successfully");
 
-    app.listen(PORT, () => {
+    app.listen(PORT, async () => {
       logger.info(`media-services runing on port ${PORT}`);
+      await connectToRabbitMQ();
+
+      await consumeEvent("post.delete", handlePostDeleted)
     });
   })
   .catch((err) => {

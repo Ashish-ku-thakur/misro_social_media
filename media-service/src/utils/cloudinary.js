@@ -33,5 +33,19 @@ const uploadMediaToCloudinary = (file) => {
 };
 
 // todo deleteMediaToCloudinary
+const deleteMediaToCloudinary = async (publicId) => {
+  logger.info(
+    `deleteMediaToCloudinary function starting... publicID is: ${publicId}`
+  );
+  try {
+    return await cloudinary.uploader.destroy(publicId);
+  } catch (error) {
+    logger.error(`Error occured While deleteMediaToCloudinary function`, error);
+  }
+};
 
-module.exports = { cloudinary, uploadMediaToCloudinary };
+module.exports = {
+  cloudinary,
+  uploadMediaToCloudinary,
+  deleteMediaToCloudinary,
+};

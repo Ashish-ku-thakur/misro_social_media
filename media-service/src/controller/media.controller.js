@@ -9,7 +9,6 @@ const uploadMedia = async (req, res) => {
   try {
     const media = req.file;
     console.log("req.file->", media);
-    
 
     if (!media) {
       logger.warn("No file Found While UploadMedia Api Hit");
@@ -71,4 +70,21 @@ const uploadMedia = async (req, res) => {
   }
 };
 
-module.exports = { uploadMedia };
+const getAllMedia = async (req, res) => {
+  logger.info("getAllMedia api hiting...");
+  try {
+    const medias = await Media.find({});
+    return res.status(200).json({
+      medias,
+    });
+  } catch (error) {
+    logger.error("Error occured While getAllMedia api hiting...", error);
+
+    return res.status(500).json({
+      message: "Error occured While getAllMedia api hiting",
+      success: false,
+    });
+  }
+};
+
+module.exports = { uploadMedia, getAllMedia };

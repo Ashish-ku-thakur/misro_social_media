@@ -9,6 +9,7 @@ const logger = require("./utils/logger");
 const dbConnect = require("./utils/db");
 const { rateLimit } = require("express-rate-limit");
 const { RedisStore } = require("rate-limit-redis");
+const {connectToRabbitMQ} = require("./utils/rabbitmq");
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -69,8 +70,9 @@ dbConnect()
   .then(() => {
     logger.info("dbconnected successfully");
 
-    app.listen(PORT, () => {
+    app.listen(PORT, async () => {
       logger.info(`post-services runing on port ${PORT}`);
+      await connectToRabbitMQ();
     });
   })
   .catch((err) => {

@@ -1,5 +1,6 @@
 const Post = require("../model/post.model");
 const logger = require("../utils/logger");
+const { publishEvent } = require("../utils/rabbitmq");
 const { validateCreatePost } = require("../utils/validatePost");
 
 async function invalidatePostCache(req, input) {
@@ -188,6 +189,13 @@ const deletePost = async (req, res) => {
         success: false,
       });
     }
+
+    // publish post delete method
+    await publishEvent("post.delete", {
+      postId: post._id.toString(),
+      userId: req.user.userId,
+      mediaIds: post.mediaIds,
+    });
 
     await invalidatePostCache(req, postId);
 
