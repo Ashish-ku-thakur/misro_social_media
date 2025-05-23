@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const dbConnect = require("./utils/db");
 const logger = require("./utils/logger");
@@ -37,7 +38,9 @@ const rateLimiter = new RateLimiterRedis({
 });
 
 app.use((req, res, next) => {
-  rateLimiter.consume(req.ip).then(() => next())
+  rateLimiter
+    .consume(req.ip)
+    .then(() => next())
     .catch(() => {
       logger.warn(`Rate Limit exceeded for IP:${req.ip}`);
       res.status(429).json({ message: "Too many requests", success: false });
