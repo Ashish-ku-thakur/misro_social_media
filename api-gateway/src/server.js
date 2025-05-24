@@ -99,6 +99,7 @@ app.use(
   })
 );
 
+// this proxy is for media-service
 app.use(
   "/v1/media",
   validateToken,
@@ -108,7 +109,7 @@ app.use(
       // Check if it's multipart (file upload)
       if (!srcReq.headers["content-type"].startsWith("multipart/form-data")) {
         proxyReqOpts.headers["Content-Type"] = "application/json"; // forward original content type
-      } 
+      }
 
       // Add your own custom headers
       if (srcReq.user && srcReq.user.userId) {
@@ -119,7 +120,35 @@ app.use(
     },
 
     userResDecorator: (proxyRes, proxyResData) => {
-      logger.info(`Response recevied from post service:${proxyRes.statusCode}`);
+      logger.info(
+        `Response recevied from media service:${proxyRes.statusCode}`
+      );
+      return proxyResData;
+    },
+  })
+);
+
+// this proxy is for search-service
+app.use(
+  "/v1/search",
+  validateToken,
+  proxy(process.env.SEARCH_SERVICE_URL, {
+    ...proxyOptions,
+    proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
+      proxyReqOpts.headers["Content-Type"] = "application/json"; // forward original content type
+
+      // Add your own custom headers
+      if (srcReq.user && srcReq.user.userId) {
+        proxyReqOpts.headers["x-user-id"] = srcReq.user.userId;
+      }
+
+      return proxyReqOpts;
+    },
+
+    userResDecorator: (proxyRes, proxyResData) => {
+      logger.info(
+        `Response recevied from search service:${proxyRes.statusCode}`
+      );
       return proxyResData;
     },
   })
@@ -133,6 +162,7 @@ app.listen(PORT, () => {
   logger.info(`API Gateway is running on port ${PORT}`);
   logger.info(`Identity Service URL: ${process.env.IDENTITY_SERVICE_URL}`);
   logger.info(`Post Service URL: ${process.env.POST_SERVICE_URL}`);
-  logger.info(`Post Service URL: ${process.env.MEDIA_SERVICE_URL}`);
+  logger.info(`Media Service URL: ${process.env.MEDIA_SERVICE_URL}`);
+  logger.info(`Search Service URL: ${process.env.SEARCH_SERVICE_URL}`);
   logger.info(`Redis URL: ${process.env.REDIS_URL}`);
 });

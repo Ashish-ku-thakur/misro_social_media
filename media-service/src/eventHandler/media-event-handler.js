@@ -11,7 +11,7 @@ const handlePostDeleted = async (event) => {
     const mediaToDelete = await Media.find({ _id: { $in: mediaIds } });
     // console.log(("mediaToDelete->", mediaToDelete));
 
-    mediaToDelete.map(async (media, index) => {
+    mediaToDelete.map(async (media) => {
       await deleteMediaToCloudinary(media.publicId);
       await Media.findByIdAndDelete(media._id);
 

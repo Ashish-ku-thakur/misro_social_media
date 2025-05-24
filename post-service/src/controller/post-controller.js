@@ -46,6 +46,14 @@ const createPost = async (req, res) => {
       mediaIds: mediaIds || [],
     });
 
+    // publish the search event
+    await publishEvent("post.created", {
+      postId: newlyCreatedPost._id.toString(),
+      userId: newlyCreatedPost.user.toString(),
+      content: newlyCreatedPost.content,
+      createdAt: newlyCreatedPost.createdAt,
+    });
+
     //afyer the create we have delete the cached
     await invalidatePostCache(req, newlyCreatedPost._id.toString());
 
