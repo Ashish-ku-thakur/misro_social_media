@@ -28,5 +28,8 @@
     "rate-limit-redis": "^4.2.0",
     "rate-limiter-flexible": "^7.1.1",
     "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
   }
 }

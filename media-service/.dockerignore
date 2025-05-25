@@ -1,0 +1,32 @@
+# Dependency folders
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Env files (sensitive data)
+.env
+.env.*  # e.g. .env.dev, .env.prod
+
+# Log files
+*.log
+logs/
+error.log
+info.log
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Build output (if any)
+dist/
+build/
+
+# Cache folders
+.cache/
+.vscode/
+.idea/
+
+# Testing
+coverage/
